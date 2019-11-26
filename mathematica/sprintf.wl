@@ -31,6 +31,7 @@ sprintf::usage="%[flags][width][.precision][length]type
         STRINGS
         s        A literal string
         c        A single character.
+        y        A Mathematica extension: convert unevaluated symbols to strings.
 		INTEGERS
         d        signed int
         i        signed int
@@ -52,7 +53,7 @@ This matches, to the best of my ability, bash's printf.
 ";
 
 
-format=RegularExpression["([^%]*)(%([+0-]*)(\\*|\\d*)?(\\.(\\*|\\d*))?(hh|ll|[hlLzjt])?([%diufFeEgGxXoscpaAn]))([\\S\\s]*)"];
+format=RegularExpression["([^%]*)(%([+0-]*)(\\*|\\d*)?(\\.(\\*|\\d*))?(hh|ll|[hlLzjt])?([%diufFeEgGxXoscypaAn]))([\\S\\s]*)"];
 
 SIGNEDTYPES="dieEgG";
 
@@ -75,6 +76,9 @@ precision["s"][PRECISION_][this_String]:=StringTake[this,Min[StringLength[this],
 precision["s"][PRECISION_][this_]:=(Message[sprintf::notstring,this];BLANK);
 precision["c"][PRECISION_][this_String]:=precision["s"][1][this]
 precision["c"][PRECISION_][this_]:=(Message[sprintf::notchar,this];BLANK);
+
+(* May as well convert symbols to strings: *)
+precision["y"][PRECISION_][this_Symbol]:=precision["s"][PRECISION][ToString[this]]
 
 
 (* Integers *)
@@ -103,17 +107,24 @@ INFNAN[this]:=Switch[ToUpperCase[this],"INF","inf","NAN","nan",_,Message[sprintf
 
 precision["f"][PRECISION_][\[Infinity]]:="inf"
 precision["f"][PRECISION_][this_String]:=INFNAN[this]
-precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][this];
+precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
 precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>StringPadRight[StringDrop[ToString[N@FractionalPart[Round[this,10^-PRECISION]]],1],PRECISION+1,"0"]
 precision["F"][PRECISION_][this_]:=ToUpperCase[precision["f"][PRECISION][this]];
 
 precision["e"][PRECISION_][\[Infinity]]:="inf"
 precision["e"][PRECISION_][this_String]:=INFNAN[this]
-precision["e"][\[Infinity]][this_?NumericQ]:=precision["e"][PRECISIONDEFAULT][this];
-precision["e"][PRECISION_][this_?NumericQ]:=ToString[ScientificForm[this,NumberFormat->(Row[{
+precision["e"][\[Infinity]][this_?NumericQ]:=precision["e"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
+precision["e"][PRECISION_][this_?NumericQ/;Abs[this]>=1]:=ToString[ScientificForm[N[this,PRECISION],NumberFormat->(Row[{
+        StringPadRight[#1,PRECISION+2 (* +2 for integer part and . *),"0"],
+        "e+",
+        If[#3=="","0",#3]
+       }]&)
+    ]]
+precision["e"][PRECISION_][this_?NumericQ/;Abs[this]<1]:=ToString[ScientificForm[N[this,PRECISION],NumberFormat->(Row[{
         StringPadRight[#1,PRECISION+2 (* +2 for integer part and . *),"0"],
         "e",
-        If[FromDigits[#3]>=0,"+",""],If[#3=="","0",#3]}]&)
+        If[#3=="","0",#3]
+        }]&)
     ]]
 precision["E"][PRECISION_][this_]:=ToUpperCase[precision["e"][PRECISION][this]]
 
@@ -133,7 +144,7 @@ precision["a"][PRECISION_][this_Integer]:=Module[{rd,offset,digits,first,rest,po
 
 (* This still has some bugs: *)
 precision["a"][PRECISION_][this_]:=Module[{default=Floor[Precision[this]]-1,rd,offset,digits,first,rest,power},
-    rd=RealDigits[this,2,Floor[4 Log[16,10.] (Switch[PRECISION,\[Infinity],default,_,PRECISION]+1 (* +1 for the the left-of-hexadecimal-point part *))]];
+    rd=RealDigits[this,2,Floor[4 Log[16,10.] (Switch[PRECISION,\[Infinity],default,_,PRECISION]+2 (* +2 for the the left-of-hexadecimal-point part *))]];
     offset=rd[[2]];
     digits=IntegerString[FromDigits[#,2]&/@Partition[rd[[1]],4,4,1,0],16];
     first=First[digits];
