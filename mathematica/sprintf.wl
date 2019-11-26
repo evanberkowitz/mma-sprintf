@@ -3,6 +3,8 @@
 BeginPackage["sprintf`"];
 
 sprintf
+fprintf
+printf
 
 
 Begin["Private`"];
@@ -43,7 +45,7 @@ sprintf::usage="%[flags][width][.precision][length]type
         f        fixed point, inf, nan
         F        fixed point, INF, NAN
         e        scientific notation with an e separator, int.0123456789e\[PlusMinus]power
-        E        scientific notation with an E separator, int.0123456789E`\[PlusMinus]power
+        E        scientific notation with an E separator, int.0123456789E\[PlusMinus]power
         g
         G
         a
@@ -239,6 +241,10 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
 
     HEAD<>(align[WIDTH][LEADINGZEROES,LEFTALIGN,SIGNED,SIGN]@precision[TYPE][PRECISION]@THIS)<>sprintf[TAIL,rest]
     ]
+
+
+fprintf[fileStream_,s_,fields___]:=WriteString[fileStream, sprintf[s,fields]];
+printf[s_,fields___]:=fprintf[$Output,s,fields];
 
 
 End[];
