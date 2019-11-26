@@ -39,8 +39,8 @@ sprintf::usage="%[flags][width][.precision][length]type
         x        unsigned int in hexadecimal 0x0123456789abcdef
         X        unsigned int in hexadecimal 0X0123456789ABCDEF
         FLOATS
-        f
-        F
+        f        fixed point, inf, nan
+        F        fixed point, INF, NAN
         e
         E
         g
@@ -53,7 +53,7 @@ sprintf::usage="%[flags][width][.precision][length]type
 
 format=RegularExpression["([^%]*)(%([+0-]*)(\\*|\\d*)?(\\.(\\*|\\d*))?(hh|ll|[hlLzjt])?([%diufFeEgGxXoscpaAn]))([\\S\\s]*)"];
 
-signedtypes="dieEgG";
+SIGNEDTYPES="dieEgG";
 
 
 BLANK="";
@@ -137,7 +137,7 @@ parse[s_]:=StringCases[s,format:>{
     "$9",
     "$3",
     Switch["$4","",-\[Infinity],"*","*",_,FromDigits["$4"]],
-    Switch["$6","",-\[Infinity],"*","*",_,FromDigits["$6"]],
+    Switch["$6","",\[Infinity],"*","*",_,FromDigits["$6"]],
     "$8"
     }][[1]];
 
@@ -155,9 +155,8 @@ align[WIDTH_][LEADINGZEROES_,LEFTALIGN_,SIGNED_,SIGN_][replacement_]:=If[LEFTALI
         True,   StringPadRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ],
     Which[
-        LEADINGZEROES && SIGNED, SIGN<>StringPadLeft[replacement,Max[StringLength[replacement],WIDTH-1],"0"],
-        SIGNED,                  StringPadLeft[SIGN<>replacement,Max[StringLength[replacement]+1,WIDTH]," "],
-        True,                    StringPadLeft[replacement,Max[StringLength[replacement],WIDTH]," "]
+        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH],"0"],
+        True,                    StringPadLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ]];
 
 
@@ -170,7 +169,7 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
         THIS,
         HEAD,
         TARGET,
-        FLAG,LEFTALIGN,SIGNED,LEADINGZEROES,HASH,SIGN=" ",
+        FLAG,LEFTALIGN,SIGNED,LEADINGZEROES,HASH,SIGN="",
         WIDTH,
         PRECISION,
         TYPE,
@@ -204,8 +203,10 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
 
     {LEADINGZEROES,LEFTALIGN,SIGNED}=flagParse[FLAG];
 
-    If[ StringContainsQ[signedtypes,TYPE] && NumericQ[THIS],
-        SIGN=Switch[Sign[THIS],-1,"-",_,If[SIGNED,"+",""]];
+    If[ StringContainsQ[SIGNEDTYPES,TYPE] && NumericQ[THIS],
+        SIGN=Switch[Sign[THIS], 
+                -1, "-",
+                _,  If[SIGNED,"+",""]];
         THIS=Abs[THIS];,
         SIGNED=False;
     ];
