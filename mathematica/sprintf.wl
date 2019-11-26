@@ -41,13 +41,14 @@ sprintf::usage="%[flags][width][.precision][length]type
         FLOATS
         f        fixed point, inf, nan
         F        fixed point, INF, NAN
-        e
-        E
+        e        scientific notation with an e separator, int.0123456789e\[PlusMinus]power
+        E        scientific notation with an E separator, int.0123456789E`\[PlusMinus]power
         g
         G
         a
         A
-        
+  
+This matches, to the best of my ability, bash's printf.
 ";
 
 
@@ -96,11 +97,25 @@ precision["o"][PRECISION_][this_]:=(Message[sprintf::notunsignedint,this];BLANK)
 
 
 (* Float *)
+PRECISIONDEFAULT=6;
+
+INFNAN[this]:=Switch[ToUpperCase[this],"INF","inf","NAN","nan",_,Message[sprintf::badfloatstring,this];BLANK];
+
 precision["f"][PRECISION_][\[Infinity]]:="inf"
-precision["f"][PRECISION_][this_String]:=Switch[ToUpperCase[this],"INF","inf","NAN","nan",_,Message[sprintf::badfloatstring,this];BLANK];
-precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][6][this];
+precision["f"][PRECISION_][this_String]:=INFNAN[this]
+precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][this];
 precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>StringPadRight[StringDrop[ToString[N@FractionalPart[Round[this,10^-PRECISION]]],1],PRECISION+1,"0"]
 precision["F"][PRECISION_][this_]:=ToUpperCase[precision["f"][PRECISION][this]];
+
+precision["e"][PRECISION_][\[Infinity]]:="inf"
+precision["e"][PRECISION_][this_String]:=INFNAN[this]
+precision["e"][\[Infinity]][this_?NumericQ]:=precision["e"][PRECISIONDEFAULT][this];
+precision["e"][PRECISION_][this_?NumericQ]:=ToString[ScientificForm[this,NumberFormat->(Row[{
+        StringPadRight[#1,PRECISION+2 (* +2 for integer part and . *),"0"],
+        "e",
+        If[FromDigits[#3]>=0,"+",""],If[#3=="","0",#3]}]&)
+    ]]
+precision["E"][PRECISION_][this_]:=ToUpperCase[precision["e"][PRECISION][this]]
 
 
 (* Hexadecimal *)
