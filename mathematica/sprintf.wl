@@ -12,7 +12,7 @@ Begin["Private`"];
 
 FLAGS="[+0-]*"
 LENGTHS="hh|ll|[hlLzjt]"
-TYPES="[%sScCydiuoxXfFeEgGaArR]"
+TYPES="[%sScCyYdiuoxXfFeEgGaArR]"
 
 sprintf::usage="%[flags][width][.precision][length]type
 	

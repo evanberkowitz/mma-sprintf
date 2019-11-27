@@ -18,6 +18,12 @@ sprintf`sprintf["%.49s\n%s %S \n%40.36s\n%s %%%%\n",columns,
     ]
 
 
+sprintf`sprintf["%s %c\n%s %Ys",
+    "You can also get single characters","!",
+    "As a Mathematica-specific extension you can stringify",symbol
+    ]
+
+
 sprintf`sprintf["%s\n%.30s\n%10d%10i%10i  %s\n%+10d%+10i%+10i  %s\n",
     "You can format integers with %d or %i.",
     columns, 
