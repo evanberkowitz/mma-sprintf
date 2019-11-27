@@ -148,7 +148,6 @@ precision["r"][PRECISION_][central_,error_]:=Module[{
         edigits=Floor@Log[10,Abs@error],
         pdigits=PRECISION
     },
-    Print["cd ",cdigits," ed ",edigits," pd ",pdigits];
     StringTemplate["`central`(`error`)e`size`"]@<|
         "central"->NumberForm[central/10^cdigits,{pdigits+1,pdigits}],
         "error"->NumberForm[Round[Abs@error/10^(cdigits-pdigits)]],
@@ -209,16 +208,16 @@ align[WIDTH_][LEADINGZEROES_,LEFTALIGN_,SIGNED_,SIGN_][replacement_]:=If[LEFTALI
         True,   StringPadRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ],
     Which[
-        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH],"0"],
+        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH-1],"0"],
         True,                    StringPadLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ]];
 
 
-sprintf[s_String]:=s
+sprintf[s_String]:=StringReplace[s,"%%"->"%"]
 sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;StringFreeQ[s,"%"]
 
 
- sprintf[s_String,this_,rest___]:=Module[
+sprintf[s_String,this_,rest___]:=Module[
     {
         THIS,
         HEAD,
