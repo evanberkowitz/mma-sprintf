@@ -10,9 +10,13 @@ printf
 Begin["Private`"];
 
 
+FLAGS="[+0-]*"
+LENGTHS="hh|ll|[hlLzjt]"
+TYPES="[%sScCydiuoxXfFeEgGaArR]"
+
 sprintf::usage="%[flags][width][.precision][length]type
 	
-	flags: zero or more of 
+	flags: "<>FLAGS<>"
 		-        left align
 		+        print a plus sign for positive numbers
 		0        prepend zeros for numeric types, rather than spaces.
@@ -22,18 +26,20 @@ sprintf::usage="%[flags][width][.precision][length]type
         integer  Use the integer directly.
 
     precision: either * or an integer.  
-		*        Consume a parameter, which should be an unsigned integer, and use that as the precision.
+        *        Consume a parameter, which should be an unsigned integer, and use that as the precision.
         integer  Use the integer directly to set how many digits after the decimal point.
 
-    length:  zero or one of hh, ll, h, l, L, z, j, t
+    length:  "<>LENGTHS<>"
         Currently does not do any thing at all.
 
-    type:  any of %diufFeEgGxXoscpaAn
+    type:  "<>TYPES<>"  The convention is that capital letters result in capitalized results.
         %        Print a literal %
         STRINGS
         s        A literal string
+        S        A literal string, capitalized.                                    EXTENSION!
         c        A single character.
-        y        A Mathematica extension: convert unevaluated symbols to strings.
+        C        A single character, capitalized.                                  EXTENSION!
+        y        Convert unevaluated symbols to strings.                           EXTENSION!
 		INTEGERS
         d        signed int
         i        signed int
@@ -50,14 +56,16 @@ sprintf::usage="%[flags][width][.precision][length]type
         G
         a
         A
-  
-This matches, to the best of my ability, bash's printf.
+        r        TWO fields, a central value and an error. central(error)e\[PlusMinus]power   EXTENSION!
+        R        TWO fields, a central value and an error. central(error)E\[PlusMinus]power   EXTENSION!
+
+This matches, to the best of my ability, bash's printf, plus useful-to-me extensions.
 ";
 
 
-format=RegularExpression["([^%]*)(%([+0-]*)(\\*|\\d*)?(\\.(\\*|\\d*))?(hh|ll|[hlLzjt])?([%diufFeEgGxXoscypaAn]))([\\S\\s]*)"];
+format=RegularExpression["([^%]*)(%("<>FLAGS<>")?(\\*|\\d*)?(\\.(\\*|\\d*))?(<>"<>LENGTHS<>"<>)?("<>TYPES<>"))([\\S\\s]*)"];
 
-SIGNEDTYPES="dieEgG";
+SIGNEDTYPES="dieEgGr";
 
 
 BLANK="";
@@ -95,7 +103,6 @@ precision["u"][PRECISION_][this_]:=(Message[sprintf::notunsignedint,this];BLANK)
 (* Integers in hex*)
 precision["x"][PRECISION_][this_Integer/;this>=0]:=IntegerString[this,16]
 precision["x"][PRECISION_][this_]:=(Message[sprintf::notunsignedint,this];BLANK);
-precision["X"][PRECISION_][this_]:=ToUpperCase[precision["x"][PRECISION][this]];
 
 (* Integers in oct *)
 precision["o"][PRECISION_][this_Integer/;this>=0]:=IntegerString[this,8]
@@ -111,7 +118,6 @@ precision["f"][PRECISION_][\[Infinity]]:="inf"
 precision["f"][PRECISION_][this_String]:=INFNAN[this]
 precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
 precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>StringPadRight[StringDrop[ToString[N@FractionalPart[Round[this,10^-PRECISION]]],1],PRECISION+1,"0"]
-precision["F"][PRECISION_][this_]:=ToUpperCase[precision["f"][PRECISION][this]];
 
 precision["e"][PRECISION_][\[Infinity]]:="inf"
 precision["e"][PRECISION_][this_String]:=INFNAN[this]
@@ -128,7 +134,27 @@ precision["e"][PRECISION_][this_?NumericQ/;Abs[this]<1]:=ToString[ScientificForm
         If[#3=="","0",#3]
         }]&)
     ]]
-precision["E"][PRECISION_][this_]:=ToUpperCase[precision["e"][PRECISION][this]]
+
+(* "r" value(uncertainty)epower form *)
+precision["r"][\[Infinity]][central_,error_]:=Module[{
+        c=Floor@Log[10,central],
+        e=Floor@Log[10,error]
+    },
+    If[Or[Ceiling[Abs[error]/10^e]==10,Floor[Abs[error]/10^e]==1],e-=1];
+    precision["r"][c-e][central,error]
+];        
+precision["r"][PRECISION_][central_,error_]:=Module[{
+        cdigits=Floor@Log[10,central],
+        edigits=Floor@Log[10,Abs@error],
+        pdigits=PRECISION
+    },
+    Print["cd ",cdigits," ed ",edigits," pd ",pdigits];
+    StringTemplate["`central`(`error`)e`size`"]@<|
+        "central"->NumberForm[central/10^cdigits,{pdigits+1,pdigits}],
+        "error"->NumberForm[Round[Abs@error/10^(cdigits-pdigits)]],
+        "size"->If[cdigits>=0,"+"<>ToString[cdigits],ToString[cdigits]]
+    |>
+]
 
 
 (* Hexadecimal *)
@@ -200,7 +226,7 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
         FLAG,LEFTALIGN,SIGNED,LEADINGZEROES,HASH,SIGN="",
         WIDTH,
         PRECISION,
-        TYPE,
+        TYPE,CASE,
         TAIL
     },
     
@@ -208,8 +234,13 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
 
     {HEAD,TARGET,TAIL,FLAG,WIDTH,PRECISION,TYPE}=parse[s];
 
+    (*Print[{HEAD,TARGET,TAIL,FLAG,WIDTH,PRECISION,TYPE}];*)
+
     (* %% is a special type, escaping the % sign. *)
     If[TYPE=="%",Return[HEAD<>"%"<>sprintf[TAIL,THIS,rest]]];
+    
+    CASE=If[(ToUpperCase[TYPE]==TYPE),ToUpperCase,Identity];
+    TYPE=ToLowerCase[TYPE];
 
     (* WIDTH has a special form * for dynamic precision, where it eats a parameter and uses it for formatting the NEXT thing. *)
     If[WIDTH=="*",
@@ -239,7 +270,9 @@ sprintf[s_String, ignored__]:=(Message[sprintf::ignoredfields,{ignored}];s)/;Str
         SIGNED=False;
     ];
 
-    HEAD<>(align[WIDTH][LEADINGZEROES,LEFTALIGN,SIGNED,SIGN]@precision[TYPE][PRECISION]@THIS)<>sprintf[TAIL,rest]
+    If[TYPE=="r", Return[HEAD<>(align[WIDTH][LEADINGZEROES,LEFTALIGN,SIGNED,SIGN]@CASE@precision[TYPE][PRECISION][THIS,First@{rest}])<>sprintf[TAIL,Sequence@@(Rest@{rest})]]];
+
+    HEAD<>(align[WIDTH][LEADINGZEROES,LEFTALIGN,SIGNED,SIGN]@CASE@precision[TYPE][PRECISION][THIS])<>sprintf[TAIL,rest]
     ]
 
 
