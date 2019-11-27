@@ -54,8 +54,8 @@ sprintf::usage="%[flags][width][.precision][length]type
         E        scientific notation with an E separator, int.0123456789E\[PlusMinus]power
         g
         G
-        a
-        A
+        a        Hexadecimal float 0x[89abcdef].[0123456789abcdef]p\[PlusMinus](power of two)
+        A        Hexadecimal float 0X[89ABCDEF].[0123456789ABCDEF]P\[PlusMinus](power of two)
         r        TWO fields, a central value and an error. central(error)e\[PlusMinus]power   EXTENSION!
         R        TWO fields, a central value and an error. central(error)E\[PlusMinus]power   EXTENSION!
 
@@ -170,8 +170,8 @@ precision["a"][PRECISION_][this_Integer]:=Module[{rd,offset,digits,first,rest,po
 ]
 
 (* This still has some bugs: *)
-precision["a"][PRECISION_][this_]:=Module[{default=Floor[Precision[this]]-1,rd,offset,digits,first,rest,power},
-    rd=RealDigits[this,2,Floor[4 Log[16,10.] (Switch[PRECISION,\[Infinity],default,_,PRECISION]+2 (* +2 for the the left-of-hexadecimal-point part *))]];
+precision["a"][PRECISION_][this_]:=Module[{default=PRECISIONDEFAULT,rd,offset,digits,first,rest,power},
+    rd=RealDigits[this,2,Floor[4 Log[10,16] Switch[PRECISION,\[Infinity],default,_,PRECISION]]];
     offset=rd[[2]];
     digits=IntegerString[FromDigits[#,2]&/@Partition[rd[[1]],4,4,1,0],16];
     first=First[digits];
@@ -208,7 +208,7 @@ align[WIDTH_][LEADINGZEROES_,LEFTALIGN_,SIGNED_,SIGN_][replacement_]:=If[LEFTALI
         True,   StringPadRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ],
     Which[
-        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH-1],"0"],
+        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH-StringLength[SIGN]],"0"],
         True,                    StringPadLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ]];
 
