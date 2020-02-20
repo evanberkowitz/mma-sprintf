@@ -1,17 +1,17 @@
-USER_PACKAGES=${HOME}/Library/Mathematica/Applications
+INSTALL := $(shell wolframscript -code '$$UserBaseDirectory')
+ORIGINAL := $(shell wolframscript -code 'Directory[]')
 
-HERE=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
-PACKAGES=$(shell find . -type f -name '*.wl' | sed 's/^..//g' )
+PACKAGES := $(shell find . -type f -name '*.wl' | sed -e 's:./::g')
 
-LINKS=$(foreach p,$(PACKAGES),$(USER_PACKAGES)/$(p))
+LINKS=$(foreach p, $(PACKAGES), $(INSTALL)/Applications/$(p))
 
 install: $(LINKS)
 
-$(USER_PACKAGES)/%.wl:
-	ln -s $(HERE)$*.wl $@
+$(INSTALL)/%.wl:
+	ln -s $(ORIGINAL)$*.wl $@
 
-$(USER_PACKAGES)/%.m:
-	ln -s $(HERE)$*.m $@
+$(INSTALL)/%.m:
+	ln -s $(ORIGINAL)$*.m $@
 
 uninstall:
 	rm $(LINKS)
