@@ -65,7 +65,7 @@ This matches, to the best of my ability, bash's printf, plus useful-to-me extens
 
 format=RegularExpression["([^%]*)(%("<>FLAGS<>")?(\\*|\\d*)?(\\.(\\*|\\d*))?(<>"<>LENGTHS<>"<>)?("<>TYPES<>"))([\\S\\s]*)"];
 
-SIGNEDTYPES="dieEgGr";
+SIGNEDTYPES="dieEfFgGr";
 
 
 BLANK="";
@@ -208,7 +208,7 @@ align[WIDTH_][LEADINGZEROES_,LEFTALIGN_,SIGNED_,SIGN_][replacement_]:=If[LEFTALI
         True,   StringPadRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ],
     Which[
-        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[SIGN<>replacement],WIDTH-StringLength[SIGN]],"0"],
+        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[replacement],WIDTH-StringLength[SIGN]],"0"],
         True,                    StringPadLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ]];
 
