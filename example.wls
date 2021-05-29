@@ -53,7 +53,7 @@ Echo@sprintf["%s\n%.20s\n%9s %+10i\n%9s %+-10i\n%9s %+010i\n%9s %010i\n",
 Echo@sprintf["%s\n%.40s\n%20s%20s\n%10s%10f%20.3f\n%10s%10f%20.3f\n",
     "You can print things with default or .specified fixed precision",columns,
     "%f", "%.3f",
-    "  \[Pi]=",  \[Pi],  \[Pi],
+    " -\[Pi]=", -\[Pi], -\[Pi],
     "10\[Pi]=",10\[Pi],10\[Pi]
     ]
 
@@ -61,8 +61,8 @@ Echo@sprintf["%s\n%.40s\n%20s%20s\n%10s%10f%20.3f\n%10s%10f%20.3f\n",
 Echo@sprintf["%s\n%.40s\n%20s%20s\n%8s%12e%20.3e%8s\n%8s%12E%20.3E%8s\n",
     "You can print things with default or .specified precision in scientific notation using %e and %E",columns,
     "%", "%.3",
-    ".1\[Pi]=",.1\[Pi],.1\[Pi], "e",
-    "10\[Pi]=",10\[Pi],10\[Pi], "E"
+    "-.1\[Pi]=",-.1\[Pi],-.1\[Pi], "e",
+     "10\[Pi]=",+10\[Pi],+10\[Pi], "E"
     ]
 
 
