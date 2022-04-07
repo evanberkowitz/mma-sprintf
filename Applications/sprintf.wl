@@ -117,19 +117,19 @@ INFNAN[this]:=Switch[ToUpperCase[this],"INF","inf","NAN","nan",_,Message[sprintf
 precision["f"][PRECISION_][\[Infinity]]:="inf"
 precision["f"][PRECISION_][this_String]:=INFNAN[this]
 precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
-precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>StringPadRight[StringDrop[ToString[N@FractionalPart[Round[this,10^-PRECISION]]],1],PRECISION+1,"0"]
+precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>StringPadRight[StringDrop[ToString[N[FractionalPart[Round[this,10^-PRECISION]],PRECISION]],1],PRECISION+1,"0"]
 
 precision["e"][PRECISION_][\[Infinity]]:="inf"
 precision["e"][PRECISION_][this_String]:=INFNAN[this]
 precision["e"][\[Infinity]][this_?NumericQ]:=precision["e"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
-precision["e"][PRECISION_][this_?NumericQ/;Abs[this]>=1]:=ToString[ScientificForm[N[this,PRECISION],NumberFormat->(Row[{
-        StringPadRight[#1,PRECISION+2 (* +2 for integer part and . *),"0"],
+precision["e"][PRECISION_][this_?NumericQ/;Abs[this]>=1]:=ToString[ScientificForm[N[this,PRECISION+2],PRECISION+1,NumberFormat->(Row[{
+        #1,
         "e+",
         If[#3=="","0",#3]
        }]&)
     ]]
-precision["e"][PRECISION_][this_?NumericQ/;Abs[this]<1]:=ToString[ScientificForm[N[this,PRECISION],NumberFormat->(Row[{
-        StringPadRight[#1,PRECISION+2 (* +2 for integer part and . *),"0"],
+precision["e"][PRECISION_][this_?NumericQ/;Abs[this]<1]:=ToString[ScientificForm[N[this,PRECISION+2],PRECISION+1,NumberFormat->(Row[{
+        #1,
         "e",
         If[#3=="","0",#3]
         }]&)
