@@ -4,13 +4,14 @@
 Needs["sprintf`"]
 
 
-columns=StringRepeat["1234567890",8];
+columnsUp=StringRepeat["1234567890",8];
+columnsDown=StringRepeat["0987654321",8];
 
 
 Echo@sprintf["%s\n","After installing mathematica/sprintf.wl somewhere Mathematica looks, you can"] 
 
 
-Echo@sprintf["%.49s\n%s %S \n%40.36s.\n%s %%%%.\n",columns,
+Echo@sprintf["\n%.49s\n%s %S \n%40.36s.\n%s %%%%.\n",columnsUp,
     "print strings with %s",
     "and capitalize them with %S",
     "strings can be aligned and truncated too",
@@ -24,9 +25,10 @@ Echo@sprintf["%s%c\n%s %Ys\n",
     ]
 
 
-Echo@sprintf["%s\n%.30s\n%10d%10i%10i  %s\n%+10d%+10i%+10i  %s\n",
+Echo@sprintf["%s\n%.30s\n%10s%10s%10s\n%10d%10i%10i  %s\n%+10d%+10i%+10i  %s\n",
     "You can format integers with %d or %i.",
-    columns, 
+    columnsDown,
+    "%10d", "%10i", "%10i",
     1234, -567890, 0,"You can omit the + flag and get only minus signs",
     1234, -567890, 0,"You can  use the + flag to demand signs."
     ]
@@ -42,19 +44,20 @@ Echo@sprintf["%s\n%10s%10u\n%10s%10o\n%10s%10x\n%10s%10X\n",
 
 
 Echo@sprintf["%s\n%.20s\n%9s %+10i\n%9s %+-10i\n%9s %+010i\n%9s %010i\n",
-    "You can left align with a - flag, pad with 0s, and demand signs",columns,
-    "%+8i",1234,
-    "%+-8i",1234,
-    "%+08i",1234,
-    "%08i",1234
+    "You can left align with a - flag, pad with 0s, and demand signs",columnsDown,
+    "%+10i",1234,
+    "%+-10i",1234,
+    "%+010i",1234,
+    "%010i",1234
     ]
 
 
-Echo@sprintf["%s\n%.60s\n%20s%20s%20s\n%10s%10f%20.3f%20.10f\n%10s%10f%20.3f%20.10f\n",
-    "You can print things with default or .specified fixed precision",columns,
+Echo@sprintf["%s\n%.60s\n%20s%20s%20s\n%10s%10f%20.3f%20.10f\n%10s%10f%20.3f%20.10f\n%14s%s",
+    "You can print things with default or .specified fixed precision",columnsDown,
     "%f", "%.3f","%.10f",
     " -\[Pi]=", -\[Pi], -\[Pi],-\[Pi],
-    "10\[Pi]=",10\[Pi],10\[Pi],10\[Pi]
+    "10\[Pi]=",10\[Pi],10\[Pi],10\[Pi],
+    "","|----| 6 digits is the default precision."
     ]
 
 
@@ -63,12 +66,12 @@ Echo@sprintf["%s\n%.60s\n%20s%20s%20s\n%8s%+12e%+20.3e%+20.10e%8s\n%8s%+12E%+20.
     "You can print things with default or .specified precision in scientific notation using %e and %E",columns,
     "%+", "%+.3","%+.10",
     "-\[Pi]/10=",small,small,small, "e",
-     "10\[Pi]=",big,big,big,"E"
+    "10\[Pi]=",big,big,big,"E"
     ]];
 
 
 Echo@sprintf["%s\n%.40s\n%20s%20s\n%6s%14a%20.8A\n",
-    "You can print floats in hexadecimal using %a or %A.",columns,
+    "You can print floats in hexadecimal using %a or %A.",columnsDown,
     "%a", "%A",
     "\[Pi]=",\[Pi],\[Pi]
     ]
