@@ -63,7 +63,7 @@ Echo@sprintf["%s\n%.60s\n%20s%20s%20s\n%10s%10f%20.3f%20.10f\n%10s%10f%20.3f%20.
 
 With[{small=-\[Pi]/10,big=+10\[Pi]},
 Echo@sprintf["%s\n%.60s\n%20s%20s%20s\n%8s%+12e%+20.3e%+20.10e%8s\n%8s%+12E%+20.3E%+20.10E%8s\n",
-    "You can print things with default or .specified precision in scientific notation using %e and %E",columns,
+    "You can print things with default or .specified precision in scientific notation using %e and %E",columnsDown,
     "%+", "%+.3","%+.10",
     "-\[Pi]/10=",small,small,small, "e",
     "10\[Pi]=",big,big,big,"E"
