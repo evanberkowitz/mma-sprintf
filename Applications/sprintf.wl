@@ -122,15 +122,9 @@ precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>"."<>St
 precision["e"][PRECISION_][\[Infinity]]:="inf"
 precision["e"][PRECISION_][this_String]:=INFNAN[this]
 precision["e"][\[Infinity]][this_?NumericQ]:=precision["e"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
-precision["e"][PRECISION_][this_?NumericQ/;Abs[this]>=1]:=ToString[ScientificForm[N[this,PRECISION+2],PRECISION+1,NumberFormat->(Row[{
-        #1,
-        "e+",
-        If[#3=="","0",#3]
-       }]&)
-    ]]
-precision["e"][PRECISION_][this_?NumericQ/;Abs[this]<1]:=ToString[ScientificForm[N[this,PRECISION+2],PRECISION+1,NumberFormat->(Row[{
-        #1,
-        "e",
+precision["e"][PRECISION_][this_]:=ToString[ScientificForm[N[this,PRECISION+2],PRECISION+1,NumberFormat->(Row[{
+        StringPadRight[#1,PRECISION+2,"0"],
+        If[Abs[this]>=1,"e+","e"],
         If[#3=="","0",#3]
         }]&)
     ]]
