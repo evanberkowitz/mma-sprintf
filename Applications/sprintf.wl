@@ -117,7 +117,17 @@ INFNAN[this]:=Switch[ToUpperCase[this],"INF","inf","NAN","nan",_,Message[sprintf
 precision["f"][PRECISION_][\[Infinity]]:="inf"
 precision["f"][PRECISION_][this_String]:=INFNAN[this]
 precision["f"][\[Infinity]][this_?NumericQ]:=precision["f"][PRECISIONDEFAULT][N[this,PRECISIONDEFAULT+2]];
-precision["f"][PRECISION_][this_?NumericQ]:=ToString[IntegerPart[this]]<>"."<>StringPadRight[ToString[IntegerPart[FractionalPart[this] 10^PRECISION]],PRECISION,"0"]
+precision["f"][PRECISION_][this_?NumericQ]:=With[{i=IntegerPart[this],f=FractionalPart[this]},
+	StringJoin[
+	ToString[i],
+	".",
+	StringPadRight[
+		StringJoin[
+			StringJoin[ConstantArray["0",Min[PRECISION,-Ceiling[If[#===Indeterminate,-\[Infinity],#]&@Log10[f]]]]],
+			ToString[IntegerPart[f 10^PRECISION]]],
+		PRECISION,
+		"0"]
+	]]
 
 precision["e"][PRECISION_][\[Infinity]]:="inf"
 precision["e"][PRECISION_][this_String]:=INFNAN[this]
