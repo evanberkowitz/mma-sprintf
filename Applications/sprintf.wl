@@ -92,7 +92,8 @@ precision["y"][PRECISION_][this_Symbol]:=precision["s"][PRECISION][ToString[this
 
 
 (* Integers *)
-precision["d"][PRECISION_][this_Integer]:=ToString[this]
+precision["d"][\[Infinity]][this_Integer]:=ToString[this]
+precision["d"][PRECISION_][this_Integer]:=SPLeft[ToString[this],PRECISION,"0"]
 precision["d"][PRECISION_][this_]:=(Message[sprintf::notinteger,this];BLANK);
 precision["i"]=precision["d"];
 
@@ -206,14 +207,18 @@ flagParse[FLAG_]:={
 }
 
 
+SPLeft[s_,w_,f_]:=If[StringLength[s]>w,s,StringPadLeft[s,w,f]]
+SPRight[s_,w_,f_]:=If[StringLength[s]>w,s,StringPadRight[s,w,f]]
+
+
 align[WIDTH_][LEADINGZEROES_,LEFTALIGN_,SIGNED_,SIGN_][replacement_]:=If[LEFTALIGN,
     Which[
-        SIGNED, StringPadRight[SIGN<>replacement,Max[StringLength[replacement]+1,WIDTH]," "],
-        True,   StringPadRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
+        SIGNED, SPRight[SIGN<>replacement,Max[StringLength[replacement]+1,WIDTH]," "],
+        True,   SPRight[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ],
     Which[
-        LEADINGZEROES,           SIGN<>StringPadLeft[replacement,Max[StringLength[replacement],WIDTH-StringLength[SIGN]],"0"],
-        True,                    StringPadLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
+        LEADINGZEROES,           SIGN<>SPLeft[replacement,Max[StringLength[replacement],WIDTH-StringLength[SIGN]],"0"],
+        True,                    SPLeft[SIGN<>replacement,Max[StringLength[SIGN<>replacement],WIDTH]," "]
     ]];
 
 
@@ -264,6 +269,7 @@ sprintf[s_String,this_,rest___]:=Module[
     ];
 
     {LEADINGZEROES,LEFTALIGN,SIGNED}=flagParse[FLAG];
+
 
     If[ StringContainsQ[SIGNEDTYPES,TYPE] && NumericQ[THIS],
         SIGN=Switch[Sign[THIS], 
